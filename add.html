@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>添加英雄</title>
+  <!-- 导包 -->
+  <script src="./lib/js/jquery-1.12.4.js"></script>
+  <script src="./lib/js/bootstrap.js"></script>
+  <link rel="stylesheet" href="./lib/css/bootstrap.min.css">
+  <script src="./lib/js/template-web.js"></script>
+  <style>
+    .wrap {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: url('images/bg03.jpg') center bottom no-repeat;
+      overflow: auto;
+    }
+
+    .navbar-brand {
+      padding: 10px 15px;
+    }
+
+    .page-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .file-input {
+      outline: none;
+      display: inline-block;
+      margin-top: 5px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-horizontal {
+      margin-top: 10px;
+    }
+
+    .logout {
+      font-weight: 900;
+      font-size: 20px;
+      color: #ff0000;
+      text-decoration: none;
+    }
+
+    .logout:hover {
+      text-decoration: none;
+      color: yellowgreen;
+    }
+
+    .preview {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <nav class="navbar  navbar-inverse navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#mymenu">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><img src="images/logo.png"></a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="panel panel-default">
+            <div class="panel-heading clearfix">
+              <div class="row">
+                <div class="col-md-6 page-title">新增英雄</div>
+                <div class="col-md-6 text-right">当前位置：首页 &gt; 新增英雄</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <form action="#" method="" class="form-horizontal" id="form" >
+                <div class="form-group">
+                  <label for="heroName" class="col-sm-2 control-label">姓名</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="heroName" name="name" placeholder="请输入姓名" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="skillName" class="col-sm-2 control-label">技能</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="skillName" name="skill" placeholder="请输入技能" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="heroIcon" class="col-sm-2 control-label">头像</label>
+                  <div class="col-sm-10">
+                    <!-- img仅仅是用来显示图片的,真正用来选择头像文件的还是input标签 -->
+                    <input type="file" class="file-input" id="heroIcon" name="icon" />
+                    <img src="" class="preview" alt="" style="height: 100px;" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-success btn-add">
+                      新 增
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    //入口函数
+    $(function () {
+      /*1.文件预览 
+      1.1 给type为file的表单元素注册一个onchange事件 （用户选择文件的时候触发）
+       */
+      $('#heroIcon').change(function () {
+        //1.2 获取用户选择的文件
+        /* 
+        file表单有一个属性 files ：是一个数组。 选择的所有的文件  （这是DOM原生语法）
+         */
+        console.log(this.files);
+        var file = this.files[0];//选择第一个文件
+        //1.3 使用 URL.createObjectURL() 创建一个临时路径
+        var url = URL.createObjectURL(file);
+        console.log(url);
+        //1.4 赋值给img的src
+        $('.preview').attr('src', url);
+      });
+
+
+
+      /*2.文件上传 
+      
+       */
+      //按钮点击事件
+      $('.btn-add').click(function (e) {
+        //2.1 阻止表单默认跳转行为
+        e.preventDefault();
+        console.log(1);
+        
+        //2.2 获取表单数据 (使用FormData)
+        /* 
+        参数为 form表单 ： DOM对象
+        formdata会自动取出该表单中所有的input标签的name与value，
+        自动拼接成多个参数的键值对(序列化)
+         */
+        var fd = new FormData($('#form')[0]);
+        //2.3 ajax发送请求
+        $.ajax({
+          url: 'http://127.0.0.1:4399/hero/add',
+          type: 'post',
+          dataType: 'json',
+          /* jq会自动取出表单中的name属性和value属性值拼接成字符串
+          而文件不是字符串,是二进制，所以不能拼接
+           */
+          processData:false,
+          /* jq会自动设置默认请求头 为 application/x-www-form-urlencoded
+          而文件上传的请求头  应该为multipart/form-data
+          这个属性为false的意思就是告诉jq不要给我设置默认请求头，改成formdata的请求头 
+           */
+          contentType:false,
+          data: fd,
+          success: function (backData) {
+            console.log(backData);
+            //2.4 响应成功之后跳转首页
+            if(backData.code == 201){
+              window.location.href = './index.html';
+            }
+          }
+        });
+        
+      });
+    });
+  </script>
+</body>
+
+</html>
